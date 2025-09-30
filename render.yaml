@@ -1,15 +1,14 @@
 # Render.com deployment configuration for FloatChat
+# Single service deployment using Docker
 
 services:
-  # Backend API Service
   - type: web
-    name: floatchat-backend
-    env: python
-    buildCommand: pip install -r requirements-production.txt
-    startCommand: python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    name: floatchat
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
     envVars:
-      - key: SERVICE_TYPE
-        value: backend
       - key: GROQ_API_KEY
         sync: false
       - key: COHERE_API_KEY
@@ -22,21 +21,9 @@ services:
         sync: false
       - key: REDIS_URL
         sync: false
-
-  # Frontend Web Service
-  - type: web
-    name: floatchat-frontend
-    env: python
-    buildCommand: pip install -r requirements-production.txt
-    startCommand: streamlit run frontend/app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true
-    envVars:
-      - key: SERVICE_TYPE
-        value: frontend
-      - key: BACKEND_URL
-        value: https://floatchat-backend.onrender.com
-      - key: GROQ_API_KEY
-        sync: false
-      - key: COHERE_API_KEY
-        sync: false
-      - key: PINECONE_API_KEY
-        sync: false
+      - key: APP_NAME
+        value: FloatChat
+      - key: APP_VERSION
+        value: 1.0.0
+      - key: DEBUG
+        value: false

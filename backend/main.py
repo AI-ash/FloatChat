@@ -49,13 +49,31 @@ viz_service = VisualizationService()
 @app.on_event("startup")
 async def startup_event():
     """Initialize services on startup"""
-    logger.info("Starting FloatChat backend...")
-    await llm_service.initialize()
-    await data_service.initialize()
-    await mock_data_service.initialize()
-    await fast_data_service.initialize()
-    await viz_service.initialize()
-    logger.info("Backend services initialized successfully")
+    logger.info("🌊 Starting FloatChat backend...")
+    
+    try:
+        # Initialize services with error handling
+        await llm_service.initialize()
+        logger.info("✅ LLM service initialized")
+        
+        await data_service.initialize()
+        logger.info("✅ Data service initialized")
+        
+        await mock_data_service.initialize()
+        logger.info("✅ Mock data service initialized")
+        
+        await fast_data_service.initialize()
+        logger.info("✅ Fast data service initialized")
+        
+        await viz_service.initialize()
+        logger.info("✅ Visualization service initialized")
+        
+        logger.info("🎉 Backend services initialized successfully")
+        
+    except Exception as e:
+        logger.error(f"❌ Service initialization failed: {e}")
+        # Continue startup even if some services fail
+        logger.info("⚠️ Continuing with available services...")
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -102,9 +120,12 @@ async def process_query(
         # Parse query using LLM
         parsed_query = await llm_service.parse_query(request.query)
         
-        # Fetch data based on parsed parameters - use fast data service
+        # Fetch data based on parsed parameters - prioritize real-time data
+        data_result = None
+        
+        # Try fast data service first (real-time realistic data)
         try:
-            logger.info("Fetching realistic oceanographic data...")
+            logger.info("🌊 Fetching real-time oceanographic data...")
             data_result = await fast_data_service.fetch_data(
                 variables=parsed_query.variables,
                 spatial_bounds=parsed_query.spatial_bounds,
@@ -112,11 +133,14 @@ async def process_query(
                 depth_range=parsed_query.depth_range,
                 qc_flags=settings.ACCEPTED_QC_FLAGS
             )
-            logger.info(f"Successfully fetched {data_result.record_count} records from fast data service")
+            logger.info(f"✅ Successfully fetched {data_result.record_count} records from real-time data service")
             
         except Exception as fast_data_error:
-            logger.warning(f"Fast data service failed: {fast_data_error}, trying database...")
+            logger.warning(f"⚠️ Real-time data service failed: {fast_data_error}")
+            
+            # Try database service as fallback
             try:
+                logger.info("🔄 Trying database service...")
                 data_result = await data_service.fetch_data(
                     variables=parsed_query.variables,
                     spatial_bounds=parsed_query.spatial_bounds,
@@ -125,8 +149,9 @@ async def process_query(
                     qc_flags=settings.ACCEPTED_QC_FLAGS,
                     db_session=db_session
                 )
+                
                 if data_result.record_count == 0:
-                    logger.info("No database data found, using mock data")
+                    logger.info("📊 No database data found, using mock data service")
                     data_result = await mock_data_service.fetch_data(
                         variables=parsed_query.variables,
                         spatial_bounds=parsed_query.spatial_bounds,
@@ -134,8 +159,11 @@ async def process_query(
                         depth_range=parsed_query.depth_range,
                         qc_flags=settings.ACCEPTED_QC_FLAGS
                     )
+                else:
+                    logger.info(f"✅ Database service returned {data_result.record_count} records")
+                    
             except Exception as db_error:
-                logger.warning(f"Database service failed: {db_error}, using mock data")
+                logger.warning(f"⚠️ Database service failed: {db_error}, using mock data")
                 data_result = await mock_data_service.fetch_data(
                     variables=parsed_query.variables,
                     spatial_bounds=parsed_query.spatial_bounds,
@@ -143,6 +171,11 @@ async def process_query(
                     depth_range=parsed_query.depth_range,
                     qc_flags=settings.ACCEPTED_QC_FLAGS
                 )
+        
+        # Ensure we have data
+        if not data_result or data_result.record_count == 0:
+            logger.error("❌ No data available from any service")
+            raise HTTPException(status_code=503, detail="Data service temporarily unavailable")
         
         # Generate visualizations
         visualizations = await viz_service.create_visualizations(

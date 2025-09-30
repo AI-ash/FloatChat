@@ -99,7 +99,24 @@ floatchat/
 
 ## 🌐 Deployment Options
 
-### Option 1: Docker Deployment (Recommended)
+### Option 1: Render.com (Recommended for Production)
+```bash
+# Quick deployment to Render
+./deploy-render.sh     # Linux/Mac
+deploy-render.bat      # Windows
+
+# Or follow the detailed guide
+# See RENDER_DEPLOYMENT.md for complete instructions
+```
+
+**Benefits:**
+- ✅ Free tier available
+- ✅ Automatic deployments from GitHub
+- ✅ Docker support
+- ✅ Easy environment variable management
+- ✅ Built-in monitoring
+
+### Option 2: Docker Deployment (Local/Other Platforms)
 ```bash
 # Clone and setup
 git clone https://github.com/yourusername/floatchat.git
@@ -112,13 +129,13 @@ cp .env.example .env
 deploy.bat         # Windows
 ```
 
-### Option 2: Local Development
+### Option 3: Local Development
 ```bash
 pip install -r requirements.txt
 python run_floatchat.py
 ```
 
-### Option 3: Cloud Platforms
+### Option 4: Other Cloud Platforms
 - **Heroku**: `git push heroku main`
 - **DigitalOcean**: App Platform integration
 - **AWS/GCP**: ECS/Cloud Run deployment

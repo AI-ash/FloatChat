@@ -20,8 +20,16 @@ RUN pip install --no-cache-dir -r requirements-production.txt
 # Copy application code
 COPY . .
 
-# Expose port
-EXPOSE 10000
+# Create non-root user for security
+RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
+USER app
+
+# Expose port (Render will set PORT environment variable)
+EXPOSE $PORT
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:$PORT/ || exit 1
 
 # Command for Render deployment with Streamlit
 CMD ["python", "start_streamlit.py"]

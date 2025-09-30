@@ -34,8 +34,8 @@ class Settings(BaseSettings):
     ERDDAP_BASE: str = "https://www.ifremer.fr/erddap"
     COPERNICUS_MARINE_BASE: str = "https://marine.copernicus.eu"
     NOAA_ERDDAP_BASE: str = "https://coastwatch.pfeg.noaa.gov/erddap"
-    # Redis Cloud for caching
-    REDIS_URL: str = "redis://default:password@redis-cloud-url:port"
+    # Redis Cloud for caching (optional)
+    REDIS_URL: str = ""
     
     # Geospatial
     DEFAULT_BBOX: List[float] = [68.0, 6.0, 97.0, 37.0]  # India region
