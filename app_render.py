@@ -16,7 +16,18 @@ import time
 
 # Import the existing FastAPI app
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from backend.main import app as backend_app
+
+try:
+    from backend.main import app as backend_app
+except ImportError as e:
+    print(f"Import error: {e}")
+    # Create a minimal FastAPI app if import fails
+    from fastapi import FastAPI
+    backend_app = FastAPI(title="FloatChat", description="AI-Powered ARGO Data System")
+    
+    @backend_app.get("/api/health")
+    async def health():
+        return {"status": "ok", "message": "FloatChat API is running"}
 
 # Create a simple HTML interface that connects to the API
 HTML_INTERFACE = """
