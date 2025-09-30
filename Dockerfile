@@ -23,5 +23,5 @@ COPY . .
 # Expose port
 EXPOSE 10000
 
-# Command for Render deployment
-CMD ["python", "app_render.py"]
+# Command for Render deployment with Streamlit
+CMD ["python", "app_streamlit_render.py"]

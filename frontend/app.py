@@ -68,6 +68,9 @@ if 'user_role' not in st.session_state:
 # Get backend URL from environment or default
 BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:8000')
 
+# Debug: Show backend URL in sidebar
+print(f"🔗 Frontend connecting to backend: {BACKEND_URL}")
+
 def main():
     """Main application function"""
     
