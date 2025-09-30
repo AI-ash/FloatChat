@@ -24,4 +24,4 @@ COPY . .
 EXPOSE 10000
 
 # Command for Render deployment with Streamlit
-CMD ["python", "app_streamlit_render.py"]
+CMD ["python", "start_streamlit.py"]
